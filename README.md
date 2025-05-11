@@ -1,39 +1,18 @@
 # TodoList
 
-This template should help get you started developing with Vue 3 in Vite.
+## 这是个简单的TodoList小项目，能添加代办事项和查阅已完成的事项，界面简洁，操作方便。
 
-## Recommended IDE Setup
+## 功能说明：
+- 查阅代办事项和已完成事项功能
+- 添加代办功能
+- 完成代办功能
+- 删除代办，已完成事项功能
+- 登录，注册功能
+- 编辑个人资料功能
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## 数据库：
+- localforage
 
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+## 组件和图标来自：
+- Element Plus组件
+- icomoon图标字体
