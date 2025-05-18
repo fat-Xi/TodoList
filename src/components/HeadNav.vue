@@ -1,65 +1,65 @@
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue'
-import falsedropdown from './FalseDropdown.vue';
-import truedropdown from './TrueDropdown.vue';
-import headmenu from './HeadMenu.vue';
-import localforage from 'localforage'
+import FalseDropdown from './FalseDropdown.vue';
+import TrueDropdown from './TrueDropdown.vue';
+import HeadMenu from './HeadMenu.vue';
 import {
-  loginsuccess, loginerror, loginfail,
-  registersuccess, registerfail,
-  logoutsuccess, logoutfail,
-  changesuccess, changefail
+  loginSuccess, loginError, loginFail,
+  registerSuccess, registerFail,
+  logoutSuccess, logoutFail,
+  changeSuccess, changeFail
 } from '@/messages.ts';
+import localforage from 'localforage'
 
 const dialogFormVisible1 = ref(false)
 const dialogFormVisible2 = ref(false)
 const dialogFormVisible3 = ref(false)
 const complete = ref(false)
-const islogin = ref(false)
-const formLabelWidth = '140px'
-const registerform = ref(null)
-const loginform = ref(null)
-const changeform = ref(null)
+const isLogin = ref(false)
+const formLabelWidth = '140px'    //！！！！！待调整
+const registerForm = ref(null)
+const loginForm = ref(null)
+const changeForm = ref(null)
 
 // 定义 todo 项的接口
 interface TodoItem {
-  todohead: string;
-  todocontent: string;
-  tododdl: string;
-  todostarttime: string;
-  tododonetime: string;
+  todoHead: string;
+  todoContent: string;
+  todoDdl: string;
+  todoStartTime: string;
+  todoDoneTime: string;
 }
 // 定义开始时间列表数据接口
 interface StartTime {
-  todostarttime: string;
-  timelist: TodoItem[]
+  startTime: string;
+  itemList: TodoItem[]
 }
 // 定义完成时间列表数据接口
 interface DoneTime {
-  tododonetime: string;
-  timelist: TodoItem[]
+  doneTime: string;
+  itemList: TodoItem[]
 }
 // 定义用户数据接口
 interface UserData {
   password: string;
   avatar: string;
   name: string;
-  todolist: StartTime[];
-  donelist: DoneTime[];
+  todoList: StartTime[];
+  doneList: DoneTime[];
 }
 
 // 带延迟的刷新函数
-const reloaddelay = () => {
+const reloadDelay = () => {
   setTimeout(() => {
     location.reload();
   }, 500);
 };
 
 //切换主页内容
-const emit = defineEmits(['isscomplete'])
-const iscomplete = (value: boolean) => {
+const emit = defineEmits(['isComplete'])
+const isComplete = (value: boolean) => {
   complete.value = value
-  emit('isscomplete', complete.value)
+  emit('isComplete', complete.value)
 }
 
 // 表单数据
@@ -107,22 +107,22 @@ const rule3 = {
 }
 
 //打开登录-注册-编辑资料窗口
-const istologin = (value: boolean) => {
+const istoLogin = (value: boolean) => {
   dialogFormVisible1.value = value
 }
-const istoregister = (value: boolean) => {
+const istoRegister = (value: boolean) => {
   dialogFormVisible2.value = value
 }
-const changeuserdata = async () => {
-  const usernumber = await localforage.getItem('user') as string
-  if (usernumber) {
+const changeUserdata = async () => {
+  const userNumber = await localforage.getItem('user') as string
+  if (userNumber) {
     try {
-      const userdata = await localforage.getItem(usernumber) as UserData | null
-      if (userdata) {
-        form.value.number = usernumber
-        form.value.password = userdata.password
-        form.value.name = userdata.name
-        form.value.avatar = userdata.avatar
+      const userData = await localforage.getItem(userNumber) as UserData | null
+      if (userData) {
+        form.value.number = userNumber
+        form.value.password = userData.password
+        form.value.name = userData.name
+        form.value.avatar = userData.avatar
       }
     }
     catch (error) {
@@ -130,14 +130,14 @@ const changeuserdata = async () => {
     }
   }
 }
-const istochange = (value: boolean) => {
-  changeuserdata()
+const istoChange = (value: boolean) => {
+  changeUserdata()
   dialogFormVisible3.value = value
 }
 
 
 //清空数据
-const cancel = () => {
+const Cancel = () => {
   form.value.number = ''
   form.value.password = ''
   form.value.name = ''
@@ -159,102 +159,102 @@ const handleFileChange = (event) => {
 }
 
 // 注册函数
-const register = async () => {
-  const registerformvalid = await registerform.value.validate()
-  if (registerformvalid) {
+const Register = async () => {
+  const registerFormValid = await registerForm.value.validate()
+  if (registerFormValid) {
     const { number, password, name, avatar } = form.value
-    const todolist: StartTime[] = [];
-    const donelist: DoneTime[] = [];
+    const todoList: StartTime[] = [];
+    const doneList: DoneTime[] = [];
     try {
-      await localforage.setItem(number, { password, name, avatar, todolist, donelist })
+      await localforage.setItem(number, { password, name, avatar, todoList, doneList })
       localforage.setItem('user', number)
       state.value.name = name
       state.value.avatar = avatar
-      islogin.value = true
-      registersuccess()
+      isLogin.value = true
+      registerSuccess()
       dialogFormVisible2.value = false
-      reloaddelay()
-      cancel()
+      reloadDelay()
+      Cancel()
     } catch (error) {
       console.log("错误：", error)
-      registerfail()
+      registerFail()
     }
   }
 }
 
 // 登录函数
-const login = async () => {
-  const loginformvalid = await loginform.value.validate()
-  if (loginformvalid) {
+const Login = async () => {
+  const loginFormValid = await loginForm.value.validate()
+  if (loginFormValid) {
     const { number, password } = form.value
     try {
-      const userdata = await localforage.getItem(number) as UserData | null
-      if (userdata && userdata.password === password) {
+      const userData = await localforage.getItem(number) as UserData | null
+      if (userData && userData.password === password) {
         localforage.setItem('user', number)
-        state.value.avatar = userdata.avatar
-        state.value.name = userdata.name
-        islogin.value = true
-        loginsuccess()
+        state.value.avatar = userData.avatar
+        state.value.name = userData.name
+        isLogin.value = true
+        loginSuccess()
         dialogFormVisible1.value = false
-        reloaddelay()
-        cancel()
+        reloadDelay()
+        Cancel()
       } else {
-        loginerror()
+        loginError()
       }
     } catch (error) {
       console.log("错误：", error)
-      loginfail()
+      loginFail()
     }
   }
 }
 
 // 退出登录
-const logout = (value: boolean) => {
+const Logout = (value: boolean) => {
   if (value) {
     localforage.removeItem('user')
-    logoutsuccess()
-    reloaddelay()
+    logoutSuccess()
+    reloadDelay()
   }
   else {
-    logoutfail()
+    logoutFail()
   }
 }
 
 //编辑资料函数
-const change = async () => {
-  const changeformvalid = await changeform.value.validate()
-  if (changeformvalid) {
+const Change = async () => {
+  const changeFormValid = await changeForm.value.validate()
+  if (changeFormValid) {
     const { number, password, name, avatar } = form.value
-    const olddata = await localforage.getItem(number) as UserData
-    const todolist: StartTime[] = olddata.todolist
-    const donelist: DoneTime[] = olddata.donelist
+    const oldData = await localforage.getItem(number) as UserData
+    const todoList: StartTime[] = oldData.todoList
+    const doneList: DoneTime[] = oldData.doneList
     try {
-      await localforage.setItem(number, { password, name, avatar, todolist, donelist })
+      await localforage.setItem(number, { password, name, avatar, todoList, doneList })
       console.log("更改成功")
       localforage.setItem('user', number)
       state.value.name = name
       state.value.avatar = avatar
-      changesuccess()
+      changeSuccess()
       dialogFormVisible3.value = false
-      reloaddelay()
-      cancel()
+      reloadDelay()
+      Cancel()
     } catch (error) {
       console.log("错误：", error)
-      changefail()
+      changeFail()
     }
   }
 }
 
 // 获取用户信息
-const getuserdata = async () => {
-  const usernumber = await localforage.getItem('user') as string
-  if (usernumber) {
+const getUserdata = async () => {
+  const userNumber = await localforage.getItem('user') as string
+  if (userNumber) {
     try {
-      const userdata = await localforage.getItem(usernumber) as { name: string, avatar: string } | null
-      if (userdata) {
-        state.value.avatar = userdata.avatar
-        state.value.name = userdata.name
-        islogin.value = true
+      const userData = await localforage.getItem(userNumber) as { name: string, avatar: string } | null
+      if (userData) {
+        state.value.avatar = userData.avatar
+        state.value.name = userData.name
+        isLogin.value = true
       }
     }
     catch (error) {
@@ -265,7 +265,7 @@ const getuserdata = async () => {
 
 
 onMounted(() => {
-  getuserdata()
+  getUserdata()
 })
 
 </script>
@@ -277,7 +277,7 @@ onMounted(() => {
   </div>
 
   <!-- 菜单 -->
-  <component :is="headmenu" @iscomplete="iscomplete"></component>
+  <component :is="HeadMenu" @isComplete="isComplete"></component>
 
   <!-- 头像昵称 -->
   <el-dropdown placement="bottom-end" trigger="click" size="large">
@@ -287,15 +287,15 @@ onMounted(() => {
     </el-button>
     <template #dropdown>
       <el-dropdown-menu>
-        <component :is="islogin ? truedropdown : falsedropdown" @istologin="istologin" @istoregister="istoregister"
-          @istochange="istochange" @changelogin="istologin" @istologout="logout"></component>
+        <component :is="isLogin ? TrueDropdown : FalseDropdown" @istoLogin="istoLogin" @istoRegister="istoRegister"
+          @istoChange="istoChange" @changeLogin="istoLogin" @istoLogout="Logout"></component>
       </el-dropdown-menu>
     </template>
   </el-dropdown>
 
   <!-- 注册注册注册 -->
   <el-dialog v-model="dialogFormVisible2" title="注册账号：" width="500" top="25vh" draggable>
-    <el-form :model="form" :rules="rule2" ref="registerform">
+    <el-form :model="form" :rules="rule2" ref="registerForm">
       <el-form-item label="账号:" :label-width="formLabelWidth" prop="number">
         <el-input v-model="form.number" autocomplete="off" placeholder="请注册账号" style="width: 300px;" />
       </el-form-item>
@@ -315,8 +315,8 @@ onMounted(() => {
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="cancel">取消</el-button>
-        <el-button type="primary" @click="register">
+        <el-button @click="Cancel">取消</el-button>
+        <el-button type="primary" @click="Register">
           注册
         </el-button>
       </div>
@@ -325,7 +325,7 @@ onMounted(() => {
 
   <!-- 登录登录登录 -->
   <el-dialog v-model="dialogFormVisible1" title="登入账号：" width="500" top="25vh" draggable>
-    <el-form :model="form" :rules="rule1" ref="loginform">
+    <el-form :model="form" :rules="rule1" ref="loginForm">
       <el-form-item label="账号:" :label-width="formLabelWidth" prop="number">
         <el-input v-model="form.number" autocomplete="off" placeholder="请输入账号" style="width: 300px;" />
       </el-form-item>
@@ -336,8 +336,8 @@ onMounted(() => {
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="cancel">取消</el-button>
-        <el-button type="primary" @click="login">
+        <el-button @click="Cancel">取消</el-button>
+        <el-button type="primary" @click="Login">
           登录
         </el-button>
       </div>
@@ -346,7 +346,7 @@ onMounted(() => {
 
   <!-- 编辑资料 -->
   <el-dialog v-model="dialogFormVisible3" title="编辑资料：" width="500" top="25vh" draggable>
-    <el-form :model="form" :rules="rule3" ref="changeform">
+    <el-form :model="form" :rules="rule3" ref="changeForm">
       <el-form-item label="账号:" :label-width="formLabelWidth" prop="number">
         <el-input v-model="form.number" autocomplete="off" disabled style="width: 300px;" />
       </el-form-item>
@@ -366,8 +366,8 @@ onMounted(() => {
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="cancel">取消</el-button>
-        <el-button type="primary" @click="change">
+        <el-button @click="Cancel">取消</el-button>
+        <el-button type="primary" @click="Change">
           修改
         </el-button>
       </div>

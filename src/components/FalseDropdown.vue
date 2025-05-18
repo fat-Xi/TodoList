@@ -4,19 +4,19 @@ import { defineEmits } from 'vue';
 
 const login = ref(false)
 const register = ref(false)
-const emit = defineEmits(['istologin', 'istoregister'])
+const emit = defineEmits(['istoLogin', 'istoRegister'])
 
-const tologin = () => {
+const toLogin = () => {
   login.value = true
-  emit('istologin', login.value)
+  emit('istoLogin', login.value)
 }
-const toregister = () => {
+const toRegister = () => {
   register.value = true
-  emit('istoregister', register.value)
+  emit('istoRegister', register.value)
 }
 </script>
 
 <template>
-  <el-dropdown-item @click="tologin">登录账号</el-dropdown-item>
-  <el-dropdown-item @click="toregister">注册账号</el-dropdown-item>
+  <el-dropdown-item @click="toLogin">登录账号</el-dropdown-item>
+  <el-dropdown-item @click="toRegister">注册账号</el-dropdown-item>
 </template>

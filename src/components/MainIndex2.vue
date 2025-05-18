@@ -2,83 +2,77 @@
 import { ref, onMounted } from 'vue'
 import localforage from 'localforage'
 
-const timelists = ref<DoneTime[]>([])
+const timeLists = ref<DoneTime[]>([])
 const groupedTimelists = ref<{ [date: string]: TodoItem[] }>({})
 const dialogVisible = ref(false)
-const deletecontent = ref()
-const deletedonetime = ref()
-
-
+const deleteContent = ref()
+const deleteDonetime = ref()
 
 // 定义 todo 项的接口
 interface TodoItem {
-  todohead: string;
-  todocontent: string;
-  tododdl: string;
-  todostarttime: string;
-  tododonetime: string;
+  todoHead: string;
+  todoContent: string;
+  todoDdl: string;
+  todoStartTime: string;
+  todoDoneTime: string;
 }
-
 // 定义开始时间列表数据接口
 interface StartTime {
-  todostarttime: string;
-  itemlist: TodoItem[]
+  startTime: string;
+  itemList: TodoItem[]
 }
-
 // 定义完成时间列表数据接口
 interface DoneTime {
-  tododonetime: string;
-  itemlist: TodoItem[]
+  doneTime: string;
+  itemList: TodoItem[]
 }
-
 // 定义用户数据接口
 interface UserData {
   password: string;
   avatar: string;
   name: string;
-  todolist: StartTime[];
-  donelist: DoneTime[];
+  todoList: StartTime[];
+  doneList: DoneTime[];
 }
-
 
 // 删除记录
-const todelete = (todocontent: string, tododonetime: string) => {
-  deletecontent.value = todocontent
-  deletedonetime.value = tododonetime
+const toDelete = (todoContent: string, todoDoneTime: string) => {
+  deleteContent.value = todoContent
+  deleteDonetime.value = todoDoneTime
   dialogVisible.value = true
 }
-const deletelist = async () => {
-  const content = deletecontent.value;
-  const donetime = deletedonetime.value;
+const deleteList = async () => {
+  const content = deleteContent.value;
+  const doneTime = deleteDonetime.value;
   try {
-    const usernumber = await localforage.getItem('user') as string;
-    const olddata = await localforage.getItem(usernumber) as UserData;
-    const { password, name, avatar, todolist } = olddata;
+    const userNumber = await localforage.getItem('user') as string;
+    const oldData = await localforage.getItem(userNumber) as UserData;
+    const { password, name, avatar, todoList } = oldData;
     // 统一日期格式
-    const formattedDonetime = formatDate(donetime);
+    const formattedDonetime = formatDate(doneTime);
     // 查找对应的完成时间分组
-    const doneTimeIndex = olddata.donelist.findIndex(
-      item => formatDate(item.tododonetime) === formattedDonetime
+    const doneTimeIndex = oldData.doneList.findIndex(
+      item => formatDate(item.doneTime) === formattedDonetime
     );
     console.log('doneTimeIndex:', doneTimeIndex);
     if (doneTimeIndex !== -1) {
       // 找到对应的完成时间分组后，查找要删除的待办事项
-      const itemIndex = olddata.donelist[doneTimeIndex].itemlist.findIndex(
-        item => item.todocontent === content
+      const itemIndex = oldData.doneList[doneTimeIndex].itemList.findIndex(
+        item => item.todoContent === content
       );
       console.log('itemIndex:', itemIndex);
       if (itemIndex !== -1) {
         // 从数组中删除该项
-        olddata.donelist[doneTimeIndex].itemlist.splice(itemIndex, 1);
+        oldData.doneList[doneTimeIndex].itemList.splice(itemIndex, 1);
         // 如果删除后该日期下没有待办事项了，删除整个日期分组
-        if (olddata.donelist[doneTimeIndex].itemlist.length === 0) {
-          olddata.donelist.splice(doneTimeIndex, 1);
+        if (oldData.doneList[doneTimeIndex].itemList.length === 0) {
+          oldData.doneList.splice(doneTimeIndex, 1);
         }
         // 更新本地存储
-        await localforage.setItem(usernumber, { password, name, avatar, todolist, donelist: olddata.donelist });
+        await localforage.setItem(userNumber, { password, name, avatar, todoList, doneList: oldData.doneList });
         console.log('删除成功');
         // 刷新数据并更新UI
-        await gettimelist();
+        await getList();
       } else {
         console.log('未找到要删除的待办事项');
       }
@@ -91,26 +85,27 @@ const deletelist = async () => {
   }
 };
 
+
 // 获取数据
-const gettimelist = async () => {
-  const usernumber = await localforage.getItem('user') as string
-  console.log('用户账号', usernumber);
-  if (usernumber) {
+const getList = async () => {
+  const userNumber = await localforage.getItem('user') as string
+  console.log('用户账号', userNumber);
+  if (userNumber) {
     try {
-      const userdata = await localforage.getItem(usernumber) as UserData
-      console.log('用户信息', userdata);
-      if (userdata) {
-        timelists.value = userdata.donelist.map((doneTime) => ({
-          tododonetime: doneTime.tododonetime,
-          itemlist: doneTime.itemlist
+      const userData = await localforage.getItem(userNumber) as UserData
+      console.log('用户信息', userData);
+      if (userData) {
+        timeLists.value = userData.doneList.map((doneTime) => ({
+          doneTime: doneTime.doneTime,
+          itemList: doneTime.itemList
         }))
         // 按日期升序排序
-        timelists.value.sort((a, b) => new Date(b.tododonetime).getTime() - new Date(a.tododonetime).getTime())
+        timeLists.value.sort((a, b) => new Date(b.doneTime).getTime() - new Date(a.doneTime).getTime())
         // 分组逻辑
         const grouped: { [date: string]: TodoItem[] } = {};
-        timelists.value.forEach((timelist) => {
-          timelist.itemlist.forEach((item) => {
-            const date = getDateOnly(item.tododonetime);
+        timeLists.value.forEach((timeList) => {
+          timeList.itemList.forEach((item) => {
+            const date = getDateOnly(item.todoDoneTime);
             if (!grouped[date]) {
               grouped[date] = [];
             }
@@ -118,7 +113,7 @@ const gettimelist = async () => {
           });
         });
         groupedTimelists.value = grouped;
-        console.log("读取成功", timelists.value)
+        console.log("读取成功", timeLists.value)
       }
     } catch (error) {
       console.log("读取错误", error)
@@ -149,7 +144,7 @@ const formatDate = (dateString) => {
 }
 
 onMounted(() => {
-  gettimelist()
+  getList()
 })
 </script>
 
@@ -160,14 +155,14 @@ onMounted(() => {
       <div class="todo-container">
         <div class="todocard" v-for="(item, itemIndex) in groupedItems" :key="itemIndex">
           <div class="cardhead">
-            <h2>--{{ item.todohead }}--</h2>
-            <button @click="todelete(item.todocontent, item.tododonetime)"></button>
+            <h2>--{{ item.todoHead }}--</h2>
+            <button @click="toDelete(item.todoContent, item.todoDoneTime)"></button>
           </div>
           <hr>
-          <div class="content">{{ item.todocontent }}</div>
+          <div class="content">{{ item.todoContent }}</div>
           <hr>
           <div class="cardfoot">
-            <h4>Donetime: {{ formatDate(getDateOnly(item.tododonetime)) }}</h4>
+            <h4>Donetime: {{ formatDate(getDateOnly(item.todoDoneTime)) }}</h4>
           </div>
         </div>
       </div>
@@ -178,7 +173,7 @@ onMounted(() => {
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="deletelist">
+        <el-button type="primary" @click="deleteList">
           删除
         </el-button>
       </div>
