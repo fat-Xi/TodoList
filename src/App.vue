@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 import {ref} from 'vue'
-import headnav from '@/components/HeadNav.vue';
-import mainindex1 from '@/components/MainIndex1.vue';
-import mainindex2 from '@/components/MainIndex2.vue';
+import HeadNav from '@/components/HeadNav.vue';
+import MainIndex1 from '@/components/MainIndex1.vue';
+import MainIndex2 from '@/components/MainIndex2.vue';
 
 const complete=ref(false)
 
-const iscomplete=(value:boolean)=>{
+const isComplete=(value:boolean)=>{
   complete.value=value
 }
 </script>
@@ -15,10 +15,10 @@ const iscomplete=(value:boolean)=>{
   <div class="common-layout">
     <el-container>
       <el-header>
-        <component :is="headnav" @isscomplete="iscomplete"></component>
+        <component :is="HeadNav" @is-Complete="isComplete"></component>
       </el-header>
       <el-main>
-        <component :is="complete ? mainindex2 : mainindex1"></component>
+        <component :is="complete ? MainIndex2 : MainIndex1"></component>
       </el-main>
     </el-container>
   </div>

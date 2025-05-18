@@ -3,19 +3,19 @@ import { ref } from 'vue'
 
 const complete = ref(false)
 
-const emit = defineEmits(['iscomplete'])
+const emit = defineEmits(['isComplete'])
 
 //选中代办
-const toincomplete = () => {
+const toIncomplete = () => {
   complete.value = false
-  emit('iscomplete', complete.value)
+  emit('isComplete', complete.value)
   document.querySelector('.active')?.classList.remove('active')
   document.querySelector('.incomplete')?.classList.add('active')
 }
 // 选中已完成
-const tocomplete = () => {
+const toComplete = () => {
   complete.value = true
-  emit('iscomplete', complete.value)
+  emit('isComplete', complete.value)
   document.querySelector('.active')?.classList.remove('active')
   document.querySelector('.complete')?.classList.add('active')
 }
@@ -23,8 +23,8 @@ const tocomplete = () => {
 
 <template>
   <ul>
-    <li class="hover active incomplete" @click="toincomplete"> Todo</li>
-    <li class="hover complete" @click="tocomplete"> Done</li>
+    <li class="hover active incomplete" @click="toIncomplete"> Todo</li>
+    <li class="hover complete" @click="toComplete"> Done</li>
   </ul>
 </template>
 

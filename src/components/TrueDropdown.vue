@@ -4,27 +4,27 @@ import { ref } from 'vue'
 const change = ref(false)
 const login = ref(false)
 const logout = ref(false)
-const emit = defineEmits(['istochange', 'changelogin', 'istologout'])
+const emit = defineEmits(['istoChange', 'changeLogin', 'istoLogout'])
 
-const tochange = () => {
+const toChange = () => {
   change.value = true
-  emit('istochange', change.value)
+  emit('istoChange', change.value)
 }
 
-const tologin = () => {
+const toLogin = () => {
   login.value = true
-  emit('changelogin', login.value)
+  emit('changeLogin', login.value)
 }
 
-const tologout = () => {
+const toLogout = () => {
   logout.value = true
-  emit('istologout', logout.value)
+  emit('istoLogout', logout.value)
 }
 
 </script>
 
 <template>
-  <el-dropdown-item @click="tochange">编辑资料</el-dropdown-item>
-  <el-dropdown-item @click="tologin">切换账号</el-dropdown-item>
-  <el-dropdown-item style="color: red;" @click="tologout">退出登录</el-dropdown-item>
+  <el-dropdown-item @click="toChange">编辑资料</el-dropdown-item>
+  <el-dropdown-item @click="toLogin">切换账号</el-dropdown-item>
+  <el-dropdown-item style="color: red;" @click="toLogout">退出登录</el-dropdown-item>
 </template>

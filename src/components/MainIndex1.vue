@@ -1,60 +1,55 @@
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue'
 import localforage from 'localforage'
-import { donesuccess } from '@/messages.ts'
+import { doneSuccess } from '@/messages.ts'
 
-const timelists = ref<StartTime[]>([])
+const timeLists = ref<StartTime[]>([])
 const groupedTimelists = ref<{ [date: string]: TodoItem[] }>({})
-const formLabelWidth = '140px'
-const addform = ref(null)
+const formLabelWidth = '140px'     //待修改
+const addForm = ref(null)
 const dialogFormVisible = ref(false)
 const dialogVisible = ref(false)
-const deletecontent = ref()
-const deletestarttime = ref()
-
-
+const deleteContent = ref()
+const deleteStartTime = ref()
 
 // 定义 todo 项的接口
 interface TodoItem {
-  todohead: string;
-  todocontent: string;
-  tododdl: string;
-  todostarttime: string;
-  tododonetime: string;
+  todoHead: string;
+  todoContent: string;
+  todoDdl: string;
+  todoStartTime: string;
+  todoDoneTime: string;
 }
-
 // 定义开始时间列表数据接口
 interface StartTime {
-  todostarttime: string;
-  itemlist: TodoItem[]
+  startTime: string;
+  itemList: TodoItem[]
 }
-
 // 定义完成时间列表数据接口
 interface DoneTime {
-  tododonetime: string;
-  itemlist: TodoItem[]
+  doneTime: string;
+  itemList: TodoItem[]
 }
-
 // 定义用户数据接口
 interface UserData {
   password: string;
   avatar: string;
   name: string;
-  todolist: StartTime[];
-  donelist: DoneTime[];
+  todoList: StartTime[];
+  doneList: DoneTime[];
 }
 
 //表单数据
 const form = ref({
-  todohead: '',
-  todocontent: '',
-  todostarttime: '',
-  tododdl: ''
+  todoHead: '',
+  todoContent: '',
+  todoStartTime: '',
+  todoDdl: ''
 })
 
 // 检验规则
-const validddl = (rule, value, callback) => {
-  const startDate = form.value.todostarttime;
+const validDdl = (rule, value, callback) => {
+  const startDate = form.value.todoStartTime;
   const start = new Date(startDate);
   const end = new Date(value);
   const now = new Date()
@@ -74,66 +69,66 @@ const validddl = (rule, value, callback) => {
   }
 }
 const rule1 = {
-  todohead: [
+  todoHead: [
     { required: true, message: "主题不能为空", trigger: "blur" },
     { min: 1, max: 8, message: "长度为<=8位", trigger: "blur" }
   ],
-  todocontent: [{ required: true, message: "内容不能为空", trigger: "blur" }],
-  todostarttime: [{ required: true, message: "日期不能为空", trigger: "blur" }],
-  tododdl: [{ required: true, message: "日期不能为空", trigger: "blur" },
-  { validator: validddl, trigger: 'blur' }
+  todoContent: [{ required: true, message: "内容不能为空", trigger: "blur" }],
+  todoStartTime: [{ required: true, message: "日期不能为空", trigger: "blur" }],
+  todoDdl: [{ required: true, message: "日期不能为空", trigger: "blur" },
+  { validator: validDdl, trigger: 'blur' }
   ],
 }
 
 // 点击+号函数
-const add = () => {
+const Add = () => {
   dialogFormVisible.value = true
 }
 
 // 添加代办函数
-const addlist = async () => {
-  const addformvalid = await addform.value.validate();
-  if (addformvalid) {
-    const { todohead, todocontent, todostarttime, tododdl } = form.value;
+const addList = async () => {
+  const addFormValid = await addForm.value.validate();
+  if (addFormValid) {
+    const { todoHead, todoContent, todoStartTime, todoDdl } = form.value;
     try {
-      const usernumber = await localforage.getItem('user') as string;
-      if (usernumber) {
-        const olddata = await localforage.getItem(usernumber) as UserData;
+      const userNumber = await localforage.getItem('user') as string;
+      if (userNumber) {
+        const oldData = await localforage.getItem(userNumber) as UserData;
         // 格式化开始日期和截止日期
-        const formattedStartDate = formatDate(todostarttime);
-        const formattedDdl = formatDate(tododdl);
+        const formattedStartDate = formatDate(todoStartTime);
+        const formattedDdl = formatDate(todoDdl);
         // 创建新的代办事项，使用格式化后的日期
         const newTodo: TodoItem = {
-          todohead,
-          todocontent,
-          tododdl: formattedDdl,
-          todostarttime: formattedStartDate,
-          tododonetime: ''
+          todoHead:todoHead,
+          todoContent:todoContent,
+          todoDdl: formattedDdl,
+          todoStartTime: formattedStartDate,
+          todoDoneTime: ''
         };
         // 查找是否已存在该日期的分组，使用格式化后的日期进行比较
-        const startTimeIndex = olddata.todolist.findIndex(
-          item => formatDate(item.todostarttime) === formattedStartDate
+        const startTimeIndex = oldData.todoList.findIndex(
+          item => formatDate(item.startTime) === formattedStartDate
         );
         if (startTimeIndex === -1) {
           // 如果不存在，创建新的日期分组
-          olddata.todolist.push({
-            todostarttime: formattedStartDate,
-            itemlist: [newTodo]
+          oldData.todoList.push({
+            startTime: formattedStartDate,
+            itemList: [newTodo]
           });
         } else {
           // 如果存在，添加到现有分组
-          olddata.todolist[startTimeIndex].itemlist.push(newTodo);
+          oldData.todoList[startTimeIndex].itemList.push(newTodo);
         }
         console.log('时间线', startTimeIndex)
-        await localforage.setItem(usernumber, {
-          password: olddata.password,
-          name: olddata.name,
-          avatar: olddata.avatar,
-          todolist: olddata.todolist,
-          donelist: olddata.donelist
+        await localforage.setItem(userNumber, {
+          password: oldData.password,
+          name: oldData.name,
+          avatar: oldData.avatar,
+          todoList: oldData.todoList,
+          doneList: oldData.doneList
         });
         console.log('添加待办成功');
-        await gettimelist(); // 重新获取数据以更新分组
+        await getList(); // 重新获取数据以更新分组
       }
     } catch (error) {
       console.log('添加代办错误', error);
@@ -141,48 +136,46 @@ const addlist = async () => {
     }
   }
   dialogFormVisible.value = false;
-  cancel();
+  Cancel();
 };
 
 // 删除代办
-const todelete = (todocontent: string, todostarttime: string) => {
-  deletecontent.value = todocontent
-  deletestarttime.value = todostarttime
+const toDelete = (todoContent: string, todoStartTime: string) => {
+  deleteContent.value = todoContent
+  deleteStartTime.value = todoStartTime
   dialogVisible.value = true
 }
-const deletelist = async () => {
-  const content = deletecontent.value;
-  const starttime = deletestarttime.value;
+const deleteList = async () => {
+  const content = deleteContent.value;
+  const startTime = deleteStartTime.value;
   try {
-    const usernumber = await localforage.getItem('user') as string;
-    if (usernumber) {
-      const olddata = await localforage.getItem(usernumber) as UserData;
+    const userNumber = await localforage.getItem('user') as string;
+    if (userNumber) {
+      const oldData = await localforage.getItem(userNumber) as UserData;
       // 格式化要删除待办的开始日期
-      const formattedStarttime = formatDate(starttime);
+      const formattedStarttime = formatDate(startTime);
       // 查找对应的时间分组，使用格式化后的日期进行比较
-      const startTimeIndex = olddata.todolist.findIndex(
-        item => formatDate(item.todostarttime) === formattedStarttime
+      const startTimeIndex = oldData.todoList.findIndex(
+        item => formatDate(item.startTime) === formattedStarttime
       );
-      console.log('starttimeindex:', startTimeIndex);
-      console.log('itemlist:', olddata.todolist[startTimeIndex]?.itemlist);
       if (startTimeIndex !== -1) {
-        const itemIndex = olddata.todolist[startTimeIndex].itemlist.findIndex(
-          item => item.todocontent === content
+        const itemIndex = oldData.todoList[startTimeIndex].itemList.findIndex(
+          item => item.todoContent === content
         );
         if (itemIndex !== -1) {
-          olddata.todolist[startTimeIndex].itemlist.splice(itemIndex, 1);
-          if (olddata.todolist[startTimeIndex].itemlist.length === 0) {
-            olddata.todolist.splice(startTimeIndex, 1);
+          oldData.todoList[startTimeIndex].itemList.splice(itemIndex, 1);
+          if (oldData.todoList[startTimeIndex].itemList.length === 0) {
+            oldData.todoList.splice(startTimeIndex, 1);
           }
-          await localforage.setItem(usernumber, {
-            password: olddata.password,
-            name: olddata.name,
-            avatar: olddata.avatar,
-            todolist: olddata.todolist,
-            donelist: olddata.donelist
+          await localforage.setItem(userNumber, {
+            password: oldData.password,
+            name: oldData.name,
+            avatar: oldData.avatar,
+            todoList: oldData.todoList,
+            doneList: oldData.doneList
           });
           console.log('删除成功');
-          await gettimelist();
+          await getList();
         }
       }
     }
@@ -193,51 +186,51 @@ const deletelist = async () => {
 };
 
 // 完成代办
-const done = async (todocontent: string, todostarttime: string) => {
+const Done = async (todoContent: string, todoStartTime: string) => {
   try {
-    const usernumber = await localforage.getItem('user') as string;
-    if (usernumber) {
-      const olddata = await localforage.getItem(usernumber) as UserData;
+    const userNumber = await localforage.getItem('user') as string;
+    if (userNumber) {
+      const oldData = await localforage.getItem(userNumber) as UserData;
       // 格式化要完成待办的开始日期
-      const formattedStarttime = formatDate(todostarttime);
+      const formattedStarttime = formatDate(todoStartTime);
       // 查找对应的时间分组，使用格式化后的日期进行比较
-      const startTimeIndex = olddata.todolist.findIndex(
-        item => formatDate(item.todostarttime) === formattedStarttime
+      const startTimeIndex = oldData.todoList.findIndex(
+        item => formatDate(item.startTime) === formattedStarttime
       );
       console.log('starttimeindex:', startTimeIndex);
       if (startTimeIndex !== -1) {
-        const itemIndex = olddata.todolist[startTimeIndex].itemlist.findIndex(
-          item => item.todocontent === todocontent
+        const itemIndex = oldData.todoList[startTimeIndex].itemList.findIndex(
+          item => item.todoContent === todoContent
         );
         if (itemIndex !== -1) {
-          const completedTodo = olddata.todolist[startTimeIndex].itemlist[itemIndex];
-          completedTodo.tododonetime = new Date().toISOString();
-          const doneTime = formatDate(completedTodo.tododonetime);
-          const doneTimeIndex = olddata.donelist.findIndex(
-            item => formatDate(item.tododonetime) === doneTime
+          const completedTodo = oldData.todoList[startTimeIndex].itemList[itemIndex];
+          completedTodo.todoDoneTime = new Date().toISOString();
+          const doneTime = formatDate(completedTodo.todoDoneTime);
+          const doneTimeIndex = oldData.doneList.findIndex(
+            item => formatDate(item.doneTime) === doneTime
           );
           if (doneTimeIndex === -1) {
-            olddata.donelist.push({
-              tododonetime: doneTime,
-              itemlist: [completedTodo]
+            oldData.doneList.push({
+              doneTime: doneTime,
+              itemList: [completedTodo]
             });
           } else {
-            olddata.donelist[doneTimeIndex].itemlist.push(completedTodo);
+            oldData.doneList[doneTimeIndex].itemList.push(completedTodo);
           }
-          olddata.todolist[startTimeIndex].itemlist.splice(itemIndex, 1);
-          if (olddata.todolist[startTimeIndex].itemlist.length === 0) {
-            olddata.todolist.splice(startTimeIndex, 1);
+          oldData.todoList[startTimeIndex].itemList.splice(itemIndex, 1);
+          if (oldData.todoList[startTimeIndex].itemList.length === 0) {
+            oldData.todoList.splice(startTimeIndex, 1);
           }
-          await localforage.setItem(usernumber, {
-            password: olddata.password,
-            name: olddata.name,
-            avatar: olddata.avatar,
-            todolist: olddata.todolist,
-            donelist: olddata.donelist
+          await localforage.setItem(userNumber, {
+            password: oldData.password,
+            name: oldData.name,
+            avatar: oldData.avatar,
+            todoList: oldData.todoList,
+            doneList: oldData.doneList
           });
           console.log('待办已标记为完成');
-          donesuccess()
-          await gettimelist();
+          doneSuccess()
+          await getList();
         }
       }
     }
@@ -247,26 +240,25 @@ const done = async (todocontent: string, todostarttime: string) => {
 };
 
 // 获取数据
-const gettimelist = async () => {
-  const usernumber = await localforage.getItem('user') as string;
-  console.log('用户账号', usernumber);
-  if (usernumber) {
+const getList = async () => {
+  const userNumber = await localforage.getItem('user') as string;
+  console.log('用户账号', userNumber);
+  if (userNumber) {
     document.querySelector('.add')?.classList.remove('none');
     try {
-      const userdata = await localforage.getItem(usernumber) as UserData;
-      console.log('用户信息', userdata);
-      if (userdata) {
-        timelists.value = userdata.todolist.map((startTime) => ({
-          todostarttime: startTime.todostarttime,
-          itemlist: startTime.itemlist
+      const userData = await localforage.getItem(userNumber) as UserData;
+      if (userData) {
+        timeLists.value = userData.todoList.map((startTime) => ({
+          startTime: startTime.startTime,
+          itemList: startTime.itemList
         }));
-        timelists.value.sort((a, b) =>
-          new Date(b.todostarttime).getTime() - new Date(a.todostarttime).getTime()
+        timeLists.value.sort((a, b) =>
+          new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
         );
         const grouped: { [date: string]: TodoItem[] } = {};
-        timelists.value.forEach((timelist) => {
-          timelist.itemlist.forEach((item) => {
-            const date = formatDate(item.todostarttime);
+        timeLists.value.forEach((timeList) => {
+          timeList.itemList.forEach((item) => {
+            const date = formatDate(item.todoStartTime);
             if (!grouped[date]) {
               grouped[date] = [];
             }
@@ -285,11 +277,11 @@ const gettimelist = async () => {
 };
 
 // 清空数据
-const cancel = () => {
-  form.value.todohead = ''
-  form.value.todocontent = ''
-  form.value.tododdl = ''
-  form.value.todostarttime = ''
+const Cancel = () => {
+  form.value.todoHead = ''
+  form.value.todoDdl = ''
+  form.value.todoContent = ''
+  form.value.todoStartTime = ''
   dialogFormVisible.value = false
 }
 
@@ -312,27 +304,27 @@ const formatDate = (dateString: string) => {
 };
 
 onMounted(() => {
-  gettimelist()
+  getList()
 })
 </script>
 
 <template>
-  <button class="add" @click="add"></button>
+  <button class="add" @click="Add"></button>
   <div class="custom-timeline">
     <div class="custom-timeline-item" v-for="(groupedItems, date) in groupedTimelists" :key="date">
       <div class="timestamp"> --- {{ formatDate(date) }} --- </div>
       <div class="todo-container">
         <div class="todocard" v-for="(item, itemIndex) in groupedItems" :key="itemIndex">
           <div class="cardhead">
-            <h2>--{{ item.todohead }}--</h2>
-            <button @click="todelete(item.todocontent, item.todostarttime)"></button>
+            <h2>--{{ item.todoHead }}--</h2>
+            <button @click="toDelete(item.todoContent, item.todoStartTime)"></button>
           </div>
           <hr>
-          <div class="content">{{ item.todocontent }}</div>
+          <div class="content">{{ item.todoContent }}</div>
           <hr>
           <div class="cardfoot">
-            <h4>Deadline: {{ formatDate(getDateOnly(item.tododdl)) }}</h4>
-            <button @click="done(item.todocontent, item.todostarttime)">Done</button>
+            <h4>Deadline: {{ formatDate(getDateOnly(item.todoDdl)) }}</h4>
+            <button @click="Done(item.todoContent, item.todoStartTime)">Done</button>
           </div>
         </div>
       </div>
@@ -341,25 +333,25 @@ onMounted(() => {
 
   <!-- 增加list -->
   <el-dialog v-model="dialogFormVisible" title="增加代办：" width="500" top="25vh" draggable>
-    <el-form :model="form" :rules="rule1" ref="addform">
-      <el-form-item label="主题:" :label-width="formLabelWidth" prop="todohead">
-        <el-input v-model="form.todohead" autocomplete="off" placeholder="请输入主题" style="width: 300px;" />
+    <el-form :model="form" :rules="rule1" ref="addForm">
+      <el-form-item label="主题:" :label-width="formLabelWidth" prop="todoHead">
+        <el-input v-model="form.todoHead" autocomplete="off" placeholder="请输入主题" style="width: 300px;" />
       </el-form-item>
-      <el-form-item label="正文:" :label-width="formLabelWidth" prop="todocontent">
-        <el-input v-model="form.todocontent" maxlength="30" style="width: 300px;" placeholder="请输入正文内容" show-word-limit
+      <el-form-item label="正文:" :label-width="formLabelWidth" prop="todoContent">
+        <el-input v-model="form.todoContent" maxlength="30" style="width: 300px;" placeholder="请输入正文内容" show-word-limit
           type="textarea" />
       </el-form-item>
-      <el-form-item label="开始日期:" :label-width="formLabelWidth" prop="todostarttime">
-        <el-date-picker v-model="form.todostarttime" type="date" placeholder="请选择开始日期" />
+      <el-form-item label="开始日期:" :label-width="formLabelWidth" prop="todoStarTtime">
+        <el-date-picker v-model="form.todoStartTime" type="date" placeholder="请选择开始日期" />
       </el-form-item>
-      <el-form-item label="截止日期:" :label-width="formLabelWidth" prop="tododdl">
-        <el-date-picker v-model="form.tododdl" type="date" placeholder="请选择截止时间" />
+      <el-form-item label="截止日期:" :label-width="formLabelWidth" prop="todoDdl">
+        <el-date-picker v-model="form.todoDdl" type="date" placeholder="请选择截止时间" />
       </el-form-item>
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="cancel">取消</el-button>
-        <el-button type="primary" @click="addlist">
+        <el-button @click="Cancel">取消</el-button>
+        <el-button type="primary" @click="addList">
           确定
         </el-button>
       </div>
@@ -371,7 +363,7 @@ onMounted(() => {
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="deletelist">
+        <el-button type="primary" @click="deleteList">
           删除
         </el-button>
       </div>
